@@ -1,9 +1,11 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send, Bot, User, Info, Plus, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
@@ -35,13 +37,19 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Scroll to bottom when messages update
+  // Properly scroll to bottom when messages update
   useEffect(() => {
-    scrollToBottom();
+    if (messagesEndRef.current) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
   };
 
   const handleSendMessage = () => {
@@ -136,62 +144,65 @@ export function ChatInterface() {
         </div>
       </div>
       
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30">
-        {messages.map((message) => (
-          <div 
-            key={message.id}
-            className={cn(
-              "flex gap-3 max-w-[80%]",
-              message.sender === "user" ? "ml-auto" : ""
-            )}
-          >
-            {message.sender === "bot" && (
+      {/* Messages area with ScrollArea component for better scroll control */}
+      <ScrollArea className="flex-1 p-4 space-y-4">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div 
+              key={message.id}
+              className={cn(
+                "flex gap-3 max-w-[80%]",
+                message.sender === "user" ? "ml-auto" : ""
+              )}
+            >
+              {message.sender === "bot" && (
+                <div className="h-8 w-8 bg-mindmate-primary/10 rounded-full flex-shrink-0 flex items-center justify-center">
+                  <Bot className="h-4 w-4 text-mindmate-primary" />
+                </div>
+              )}
+              
+              <div className={cn(
+                "p-3 rounded-lg",
+                message.sender === "user" 
+                  ? "bg-mindmate-primary text-primary-foreground"
+                  : "bg-background border"
+              )}>
+                {message.text}
+                <div className={cn(
+                  "text-xs mt-1",
+                  message.sender === "user" 
+                    ? "text-primary-foreground/70"
+                    : "text-muted-foreground"
+                )}>
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+              
+              {message.sender === "user" && (
+                <div className="h-8 w-8 bg-secondary rounded-full flex-shrink-0 flex items-center justify-center">
+                  <User className="h-4 w-4 text-secondary-foreground" />
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {isTyping && (
+            <div className="flex gap-3 max-w-[80%]">
               <div className="h-8 w-8 bg-mindmate-primary/10 rounded-full flex-shrink-0 flex items-center justify-center">
                 <Bot className="h-4 w-4 text-mindmate-primary" />
               </div>
-            )}
-            
-            <div className={cn(
-              "p-3 rounded-lg",
-              message.sender === "user" 
-                ? "bg-mindmate-primary text-primary-foreground"
-                : "bg-background border"
-            )}>
-              {message.text}
-              <div className={cn(
-                "text-xs mt-1",
-                message.sender === "user" 
-                  ? "text-primary-foreground/70"
-                  : "text-muted-foreground"
-              )}>
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <div className="bg-background border p-3 rounded-lg flex gap-1 items-center">
+                <div className="w-2 h-2 bg-mindmate-primary/60 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-mindmate-primary/60 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
+                <div className="w-2 h-2 bg-mindmate-primary/60 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }}></div>
               </div>
             </div>
-            
-            {message.sender === "user" && (
-              <div className="h-8 w-8 bg-secondary rounded-full flex-shrink-0 flex items-center justify-center">
-                <User className="h-4 w-4 text-secondary-foreground" />
-              </div>
-            )}
-          </div>
-        ))}
-        
-        {isTyping && (
-          <div className="flex gap-3 max-w-[80%]">
-            <div className="h-8 w-8 bg-mindmate-primary/10 rounded-full flex-shrink-0 flex items-center justify-center">
-              <Bot className="h-4 w-4 text-mindmate-primary" />
-            </div>
-            <div className="bg-background border p-3 rounded-lg flex gap-1 items-center">
-              <div className="w-2 h-2 bg-mindmate-primary/60 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-mindmate-primary/60 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
-              <div className="w-2 h-2 bg-mindmate-primary/60 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }}></div>
-            </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
+          )}
+          
+          {/* This empty div is our scroll target */}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
       
       {/* Input area */}
       <div className="border-t p-4 bg-background">
