@@ -13,7 +13,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     <div 
       className={cn(
         "flex gap-3 max-w-[80%]",
-        message.sender === "user" ? "ml-auto" : ""
+        message.sender === "user" ? "ml-auto justify-end" : ""
       )}
     >
       {message.sender === "bot" && (
