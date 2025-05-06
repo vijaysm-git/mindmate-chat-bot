@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,16 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock responses for demonstration
-const mockResponses = [
-  "I understand that must be difficult. Can you tell me more about how that's affecting you?",
-  "It sounds like you've been going through a lot lately. How have you been coping with these feelings?",
-  "I hear that you're feeling overwhelmed. Let's explore some strategies that might help you manage those emotions.",
-  "Thank you for sharing that with me. Would it be helpful to try a quick mindfulness exercise together?",
-  "I notice you mentioned feeling anxious. Have you identified any specific triggers for your anxiety?",
-  "It's completely normal to feel that way. Many people experience similar emotions. What helps you feel better when this happens?",
-];
+import { getEmotionalResponse } from "@/utils/emotionAnalysis";
 
 interface Message {
   id: string;
@@ -69,13 +59,13 @@ export function ChatInterface() {
     setInputMessage("");
     setIsTyping(true);
 
-    // Simulate AI response after a delay
+    // Generate emotional response based on user's message
     setTimeout(() => {
-      const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+      const personalizedResponse = getEmotionalResponse(userMessage.text);
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         sender: "bot",
-        text: randomResponse,
+        text: personalizedResponse,
         timestamp: new Date(),
       };
       
